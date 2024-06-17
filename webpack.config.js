@@ -1,3 +1,4 @@
+const { type } = require("os");
 const path = require("path");
 
 module.exports = {
@@ -31,7 +32,11 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: ["style-loader", "css-loader"],
+        use: ["style-loader", "css-loader", "postcss-loader"],
+      },
+      {
+        test: /\.svg$/,
+        type: "asset/inline",
       },
     ],
   },
@@ -39,7 +44,7 @@ module.exports = {
     react: "react",
     "react-dom": "react-dom",
     "react-hook-form": "react-hook-form",
-  },  
+  },
   resolve: {
     extensions: [".js", ".jsx", ".ts", ".tsx"],
   },

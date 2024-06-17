@@ -8,7 +8,7 @@ export default function Home({ darkMode }: { darkMode: boolean }) {
   useEffect(() => {
     const handleResize = () => {
       const screenWidth = window.innerWidth;
-      if (screenWidth <= 768) {
+      if (screenWidth < 720) {
         setSheetPosition("bottom");
       } else {
         setSheetPosition("right");
@@ -37,7 +37,12 @@ export default function Home({ darkMode }: { darkMode: boolean }) {
 
   return (
     <div className="flex justify-center items-center h-screen">
-      <button onClick={toggleSheet} className="px-4 py-2 rounded-md mr-4">
+      <button
+        onClick={toggleSheet}
+        className={`px-4 py-2 rounded-md border-none ${
+          darkMode ? "bg-[#FFD700] !text-black" : "bg-[#0A2133] !text-white"
+        }`}
+      >
         Login
       </button>
 

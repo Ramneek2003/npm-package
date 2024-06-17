@@ -25,6 +25,7 @@ export default function Button() {
     formState: { errors },
     handleSubmit,
   } = useForm<Inputs>();
+  const darkMode = true;
 
   const [isOpen, setIsOpen] = useState(false);
   const closeModal = () => {
@@ -231,7 +232,11 @@ export default function Button() {
                   We have sent you a 6 digit OTP on +91 {user?.phone}
                 </p>
                 <p className="text-[#828282]">One time password</p>
-                <OtpInput onOtpSubmit={onOtpSubmit} phone={user?.phone} />
+                <OtpInput
+                  onOtpSubmit={onOtpSubmit}
+                  phone={user?.phone}
+                  darkMode={darkMode}
+                />
                 {loading && <p>Verifying...</p>}
               </form>
               <button

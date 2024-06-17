@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Transition } from "@headlessui/react";
 import Input from "./Input";
 import { useForm } from "react-hook-form";
@@ -7,7 +7,11 @@ import { validatePhoneNumber } from "../../utils/validatePhone";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 import OtpInput from "./OtpInput";
-import { ArrowPathIcon, PencilSquareIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowPathIcon,
+  PencilSquareIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 
 type Inputs = {
   phone: string;
@@ -29,14 +33,6 @@ const SlidingSheet = ({
   position: string;
   darkMode: boolean;
 }) => {
-  //   const [isOpenInternal, setIsOpenInternal] = useState(isOpen);
-
-  //   const handleClose = () => {
-  //     setIsOpenInternal(false);
-  //     setTimeout(() => {
-  //       onClose();
-  //     }, 300); // Adjust the timeout to match your transition duration
-  //   };
   const [isFullHeight, setIsFullHeight] = useState(false);
   const [resending, setResending] = useState(false);
   const isRegistered = useRef(false);
@@ -99,95 +95,68 @@ const SlidingSheet = ({
       return;
     }
 
-    axios
-      .post(
-        `${process.env.NEXT_PUBLIC_BASE_API}auth/otpless-login`,
-        {
-          phone: user?.phone,
-        },
-        { withCredentials: true }
-      )
-      .then((data) => {
-        if (data?.data?.data?.token) {
-          signIn("fireAuth", {
-            ...data.data.data,
-            redirect: false,
-          });
-          localStorage.setItem("token", data.data.token);
-
-          //   eventBus.$emit("showToast", {
-          //     message: `Welcome ${data.data.data.name}!`,
-          //     type: "success",
-          //   });
-          //   router.replace(`/new-dashboard`);
-        }
-        return Promise.resolve(data);
-      })
-      .catch((error) => {
-        return Promise.reject(error);
-      });
-
     // mixpanel.track("verify_otp", {
     //   user: {
     //     phone: user?.phone,
     //   },
     //   lms: "lms_otpVerify",
     // });
-    // axios
-    //   .get(
-    //     `${process.env.NEXT_PUBLIC_BASE_API}auth/verify-otp?phone=${
-    //       "+91" + user?.phone?.toString()
-    //     }&otp=${code}`
-    //   )
-    //   .then((response) => {
-    //     if (response.data && response.data.data) {
-    //       if (response.data.data?.type === "error") {
-    //         // eventBus.$emit("showToast", {
-    //         //   message: `OTP is incorrect, Please try again!`,
-    //         //   type: "error",
-    //         // });
-    //       } else if (response.data.data?.type === "success") {
-    //         return axios
-    //           .post(
-    //             `${process.env.NEXT_PUBLIC_BASE_API}auth/otpless-login`,
-    //             {
-    //               phone: user?.phone,
-    //             },
-    //             { withCredentials: true }
-    //           )
-    //           .then((data) => {
-    //             if (data?.data?.data?.token) {
-    //               signIn("fireAuth", {
-    //                 ...data.data.data,
-    //                 redirect: false,
-    //               });
-    //               localStorage.setItem("token", data.data.token);
-
-    //               //   eventBus.$emit("showToast", {
-    //               //     message: `Welcome ${data.data.data.name}!`,
-    //               //     type: "success",
-    //               //   });
-    //               //   router.replace(`/new-dashboard`);
-    //             }
-    //             return Promise.resolve(data);
-    //           })
-    //           .catch((error) => {
-    //             return Promise.reject(error);
-    //           });
-    //       } else {
-    //         // eventBus.$emit("showToast", {
-    //         //   message: `Unknown Error, Please try again!`,
-    //         //   type: "error",
-    //         // });
-    //       }
-    //       return;
-    //     } else {
-    //       return;
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     alert("Some Error occurred, please try again!");
-    //   });
+    axios
+      .get(
+        `${process.env.NEXT_PUBLIC_BASE_API}auth/verify-otp?phone=${
+          "+91" + user?.phone?.toString()
+        }&otp=${code}`
+      )
+      .then((response) => {
+        if (response.data && response.data.data) {
+          if (response.data.data?.type === "error") {
+            // eventBus.$emit("showToast", {
+            //   message: `OTP is incorrect, Please try again!`,
+            //   type: "error",
+            // });
+          } else if (response.data.data?.type === "success") {
+            return axios
+              .post(
+                `${process.env.NEXT_PUBLIC_BASE_API}auth/otpless-login`,
+                {
+                  phone: user?.phone,
+                },
+                { withCredentials: true }
+              )
+              .then((data) => {
+                if (data?.data?.data?.token) {
+                  signIn("fireAuth", {
+                    ...data.data.data,
+                    redirect: false,
+                  });
+                  localStorage.setItem("token", data.data.token);
+                  onClose();
+                  //   eventBus.$emit("showToast", {
+                  //     message: `Welcome ${data.data.data.name}!`,
+                  //     type: "success",
+                  //   });
+                  window.location.href =
+                    "https://www.thefuture.university/new-dashboard";
+                }
+                return Promise.resolve(data);
+              })
+              .catch((error) => {
+                return Promise.reject(error);
+              });
+          } else {
+            // eventBus.$emit("showToast", {
+            //   message: `Unknown Error, Please try again!`,
+            //   type: "error",
+            // });
+          }
+          return;
+        } else {
+          return;
+        }
+      })
+      .catch((error) => {
+        alert("Some Error occurred, please try again!");
+      });
   };
 
   const resendCode = () => {
@@ -235,9 +204,8 @@ const SlidingSheet = ({
     <Transition
       show={isOpen}
       as="div"
-      className={`${
-        darkMode ? "bg-blue-1" : "bg-white"
-      } fixed z-30 flex flex-col justify-start items-start ${
+      style={{ backgroundColor: `${darkMode ? "#00163A" : "white"}` }}
+      className={` fixed z-30 flex flex-col justify-start items-start ${
         position === "bottom"
           ? "bottom-0 left-0 right-0"
           : "top-0 bottom-0 right-0"
@@ -253,35 +221,54 @@ const SlidingSheet = ({
         position === "bottom" ? "translate-y-full" : "translate-x-full"
       }`}
     >
+      <button
+        onClick={onClose}
+        className="mt-4 p-1 absolute right-8 border-none rounded-full"
+        style={{
+          backgroundColor: "#0A21331A",
+        }}
+      >
+        <XMarkIcon className={`${darkMode ? "text-white" : ""} w-6 h-6`} />
+      </button>
       <div
         className={`shadow-lg ${
           position === "right"
             ? "h-full p-24"
-            : `${isFullHeight ? "h-full" : "h-72"} w-full p-4`
+            : `${isFullHeight ? "h-screen" : "h-96"} w-full p-8`
         } overflow-y-auto flex flex-col justify-center items-center gap-3`}
       >
-        <button
-          onClick={onClose}
-          className="mt-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md"
-        >
-          Close
-        </button>
         <div className="flex flex-col justify-center items-center gap-2">
           <img
-            src={darkMode ? "/astroLogo.svg" : "/logo.svg"}
+            src={
+              darkMode
+                ? require("../../public/astroLogo.svg")
+                : require("../../public/logo.svg")
+            }
             alt="Logo"
-            width={100}
-            height={100}
+            className="max-md:w-20"
           />
-          <h4 className="text-[#383838] font-semibold">
-            Welcome to TradeWise!
+          <h4
+            className={`font-semibold ${
+              darkMode ? "text-white" : "text-[#383838]"
+            }`}
+          >
+            Welcome to{" "}
+            <span
+              className={`${darkMode ? "text-[#FFD700]" : "text-[#383838]"}`}
+            >
+              {darkMode ? "AstroLearn!" : "TradeWise!"}
+            </span>
           </h4>
-          <p className="text-[#43465180]">
+          <p
+            className={`${
+              darkMode ? "text-white" : "text-[#43465180]"
+            } max-md:text-sm`}
+          >
             Discover India's Best Learning Platform text!
           </p>
         </div>
         <form
-          className="w-full flex flex-col gap-6 relative"
+          className="w-full flex flex-col gap-6 relative justify-center items-center"
           onSubmit={handleSubmit(submit)}
           onClick={() => {
             if (!isRegistered.current) {
@@ -311,7 +298,7 @@ const SlidingSheet = ({
                   labelClassName="!normal-case"
                   placeholder="Enter your phone number"
                   name="phone"
-                  className="h-12 font-semibold"
+                  className="h-12 !w-80 max-md:!w-72 max-xs:!w-64 font-semibold"
                   register={register}
                   errors={errors}
                   rules={{
@@ -336,7 +323,11 @@ const SlidingSheet = ({
               </div>
               <button
                 type="submit"
-                className="bg-[#0A21331A] !text-[#0A2133] h-12 w-full"
+                className="h-12 w-full border-none max-lg:max-w-md max-md:max-w-sm"
+                style={{
+                  backgroundColor: `${darkMode ? "#FFD700" : "#0A21331A"}`,
+                  color: "#0A2133",
+                }}
               >
                 Send OTP
               </button>
@@ -346,7 +337,7 @@ const SlidingSheet = ({
 
         {loginState === LOGIN_STATE.FINAL && (
           <form
-            className="w-full flex flex-col gap-6 relative"
+            className="w-full flex flex-col gap-6 relative max-lg:max-w-md max-md:max-w-sm"
             onSubmit={handleSubmit(onOtpSubmit)}
           >
             <div className="flex flex-row justify-center items-start gap-2">
@@ -365,7 +356,7 @@ const SlidingSheet = ({
                 label=""
                 placeholder="Enter your phone number"
                 name="phone"
-                className="h-12 font-semibold"
+                className="h-12 !w-80 max-md:!w-72 max-xs:!w-64 font-semibold"
                 register={register}
                 errors={errors}
                 disabled={true}
@@ -387,38 +378,57 @@ const SlidingSheet = ({
                 onClick={() => setIsFullHeight(true)}
               />
             </div>
-            {/* <PencilSquareIcon
-              className="h-6 w-6 text-gray-500 absolute right-1 top-9 max-lg:top-10 cursor-pointer"
+            <PencilSquareIcon
+              className="h-6 w-6 text-gray-500 absolute right-1 top-3 cursor-pointer"
               onClick={() => setLoginState(LOGIN_STATE.INITIAL)}
               title="Edit"
               role="Edit"
-            /> */}
+            />
             <div className="w-full flex flex-col gap-4 justify-end items-end">
               <form className="w-full flex flex-col gap-4 items-start">
-                <p className="text-[#828282]">One time password</p>
-                <OtpInput onOtpSubmit={onOtpSubmit} phone={user?.phone} />
+                <p style={{ color: `${darkMode ? "white" : "#828282"}` }}>
+                  One time password
+                </p>
+                <OtpInput
+                  onOtpSubmit={onOtpSubmit}
+                  phone={user?.phone}
+                  darkMode={darkMode}
+                />
               </form>
               <div
-                className="flex flex-row justify-center items-center gap-2 hover:cursor-pointer hover:underline"
+                className="flex flex-row justify-end items-center gap-2 hover:cursor-pointer hover:underline"
                 onClick={resendCode}
               >
-                <div className="text-[#828282]">
+                <div style={{ color: `${darkMode ? "white" : "#828282"}` }}>
                   {resending ? "..Resending" : "Resend"}
                 </div>
-                <ArrowPathIcon className="w-4 h-4 text-[#828282]" />
+                <ArrowPathIcon
+                  className={`w-4 h-4  ${
+                    darkMode ? "text-white" : "text-[#828282]"
+                  }`}
+                />
               </div>
             </div>
             <button
-              className="bg-[#0A21331A] !text-[#0A2133] h-12 w-full"
+              className="h-12 w-full border-none"
+              style={{
+                backgroundColor: `${darkMode ? "#FFD700" : "#0A21331A"}`,
+                color: "#0A2133",
+              }}
               type="submit"
             >
               Login
             </button>
           </form>
         )}
-        <small className="text-[#434651] font-semibold">
+        <small
+          className="font-semibold"
+          style={{ color: `${darkMode ? "#FFD700" : "#434651"}` }}
+        >
           *By signing in you agree to our{" "}
-          <span className="text-[#43465180]">Terms & Conditions</span>
+          <span style={{ color: `${darkMode ? "#FFD700" : "#43465180"}` }}>
+            Terms & Conditions
+          </span>
         </small>
       </div>
     </Transition>

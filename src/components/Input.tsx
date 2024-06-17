@@ -36,9 +36,7 @@ export default function Input({
       <input
         type={type}
         placeholder={placeholder}
-        className={`${
-          errors[name] && "input-invalid"
-        } ${className} w-80 max-md:!w-72`}
+        className={`${errors[name] && "input-invalid"} ${className} `}
         disabled={disabled}
         onClick={onClick}
         {...register(name, rules)}

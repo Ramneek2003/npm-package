@@ -4,9 +4,11 @@ import React from "react";
 export default function OtpInput({
   phone,
   onOtpSubmit,
+  darkMode,
 }: {
   phone: string;
   onOtpSubmit: (otp: any) => void;
+  darkMode: boolean;
 }) {
   const [otp, setOtp] = useState(new Array(6).fill(""));
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -79,7 +81,9 @@ export default function OtpInput({
             onChange={(e) => handleChange(index, e)}
             onClick={() => handleClick(index)}
             onKeyDown={(e) => handleKeyDown(index, e)}
-            className="!w-12 !h-12 text-center"
+            className={`!w-12 !h-12 text-center bg-transparent ${
+              darkMode ? "text-white" : ""
+            }`}
           />
         );
       })}
