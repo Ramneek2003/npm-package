@@ -205,7 +205,7 @@ const SlidingSheet = ({
       show={isOpen}
       as="div"
       style={{ backgroundColor: `${darkMode ? "#00163A" : "white"}` }}
-      className={` fixed z-30 flex flex-col justify-start items-start ${
+      className={` fixed z-50 flex flex-col justify-start items-start ${
         position === "bottom"
           ? "bottom-0 left-0 right-0"
           : "top-0 bottom-0 right-0"
